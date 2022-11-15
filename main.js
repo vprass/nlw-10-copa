@@ -7,30 +7,59 @@ function createGame(player1, hour, player2) {
     </li>
   `
 }
-let delay = -0.4;
-function createCard(date, day, games) {
-  delay = delay + 0.4;
+let delay = -0.4
+function createCard(date, games) {
+  delay = delay + 0.4
   return `
     <div class="card" style="animation-delay: ${delay}s">
-      <h2>${date}<span>${day}</span></h2>
+      <h2>${date.getDate()}/${date.getMonth() + 1}<span>${dayWeek(
+    date
+  )}</span></h2>
       <ul>
         ${games}
       </ul>
     </div>
   `
 }
+function dayWeek(date) {
+  switch (date.getDay()) {
+    case 0:
+      return "Domingo"
+    case 1:
+      return "Segunda-Feira"
+    case 2:
+      return "Terça-Feira"
+    case 3:
+      return "Quarta-Feira"
+    case 4:
+      return "Quinta-Feira"
+    case 5:
+      return "Sexta-Feira"
+    case 6:
+      return "Sábado"
+  }
+}
 
-document.querySelector("#cards").innerHTML = 
-    createCard(
-      "24/11",
-      "Quinta-feira",
-      createGame("brazil", "16:00", "serbia")) +
-    createCard(
-      "28/11",
-      "Segunda-feira",
-      createGame("brazil", "13:00", "switzerland") +
-      createGame("portugal", "16:00", "uruguay")) +
-    createCard(
-      "02/12",
-      "Sexta-feira",
-      createGame("brazil", "16:00", "cameroon"))
+function listCards() {
+  return $.ajax({
+    method: "GET",
+    url: "http://localhost:3000/cards",
+    async: false,
+    success: (response) => {
+      return response
+    },
+  }).responseJSON.map((item) => {
+    item.date = new Date(item.date)
+    return item
+  })
+}
+document.querySelector("#cards").innerHTML = listCards()
+  .map((item) => {
+    let hour = `${item.date.getHours()}:${
+      item.date.getMinutes() > 9
+        ? item.date.getMinutes()
+        : `0${item.date.getMinutes()}`
+    }`
+    return createCard(item.date, createGame(item.player1, hour, item.player2))
+  })
+  .join("")
